@@ -25,16 +25,18 @@ def polarity_scores_roberta(text: str) -> dict:
         'positive': float(scores[2])
     }
 
-def get_tones_from_textblock(textblock: str) -> List[str]:
+def get_tones_from_textblock(textblock: str) -> dict:
     try:
         result = emotion_classifier(textblock[:512])
-        # top_k=3 → result = [ [ {label, score}, {label, score}, ... ] ]
         if isinstance(result, list) and isinstance(result[0], list):
-            return [r['label'] for r in result[0]]
-        return []
+            return {
+                r["label"]: round(float(r["score"]), 4)
+                for r in result[0]
+            }
+        return {}
     except Exception as e:
         print(f"Tone extraction error: {e}")
-        return []
+        return {}
 
 
 def predict_tones(reviews: List[str]) -> List[dict]:
@@ -51,4 +53,4 @@ def predict_tones(reviews: List[str]) -> List[dict]:
 
 if __name__ == "__main__":
     print("tones")
-    print(predict_tones(['Pathetic experience. AC & blower not working. All passengers are feeling very uncomfortable. Is bus me kabhi travel nahi karna boht gandi service hai.', 'Bhot hi bekar service and they charge fare without giving slip first they say we have ac bus and whenever we sit in the bus and ask for ac they say there is extra fuel charge for ac 3000  they should be mentioned that they provide bus is ac …', 'Good. Time to reach destination may be delayed by 15 min , cleanliness good\nNowadays in midway buses are taking passengers who are standing or acquiring seats of pre booked passengers seats.\nOverall good service but need to be more professional']))
+    print(predict_tones(['Pathetic experience. AC & blower not working. All passengers are feeling very uncomfortable. Is bus me kabhi travel nahi karna boht gandi service hai.']))
