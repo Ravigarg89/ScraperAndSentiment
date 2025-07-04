@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
 from tone_predictor import predict_tones
-from typing import List
+from response_generator import generate_admin_response
+from typing import List, Dict
 import subprocess
 import json
 
@@ -46,8 +47,23 @@ def predict_tone(input: ReviewInput):
     predictions = predict_tones(input.reviews)
     return {"predictions": predictions}
 
+
+# POST endpoint for response generation
+class ReviewPrediction(BaseModel):
+    review: str
+    sentiment_scores: Dict[str, float]
+    tones: Dict[str, float]
+
+@app.post("/generate_response")
+def get_generated_response(data: ReviewPrediction):
+    try:
+        result = generate_admin_response(data.review, data.sentiment_scores, data.tones)
+        return {"admin_responses": result}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/")
 def read_root():
     return {
-        "message": "Welcome to the scraper API. Available endpoints: /scrape (GET), /predict (POST). Visit /docs for interactive API."
+        "message": "Welcome to the scraper API. Available endpoints: /scrape (GET), /predict (POST), /generate_response (POST). Visit /docs for interactive API."
     }
